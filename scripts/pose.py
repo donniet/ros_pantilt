@@ -35,7 +35,7 @@ def handlePose(kit, pose):
 
     print('roll, pitch, yaw = {} {} {}'.format(roll, pitch, yaw))
 
-def handleVector3(kit, vec3):
+def handleVector3(kit, pub, vec3):
     print('roll, pitch, yaw = {} {} {}'.format(vec3.x, vec3.y, vec3.z))
 
     if vec3.y < 0 or vec3.y > kit.servo[1].actuation_range:
@@ -49,14 +49,17 @@ def handleVector3(kit, vec3):
     kit.servo[0].angle = vec3.z
     kit.servo[1].angle = vec3.y
 
+    pub.publish(vec3)
+
 def listener():
     kit = ServoKit(channels=16)
-    kit.servo[0].angle = 0
-    kit.servo[1].angle = 0
+    #kit.servo[0].angle = 0
+    #kit.servo[1].angle = 0
 
     rospy.init_node('pantilt', anonymous=True)
 
-    rospy.Subscriber('pantiltPose', Vector3, partial(handleVector3, kit))
+    pub = rospy.Publisher('pantilt', Vector3, queue_size=10)
+    rospy.Subscriber('pantiltPose', Vector3, partial(handleVector3, kit, pub))
 
     rospy.spin()
 
